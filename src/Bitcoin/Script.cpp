@@ -26,6 +26,7 @@
 #include <algorithm>
 #include <cassert>
 #include <set>
+#include <iostream>
 
 using namespace TW;
 using namespace TW::Bitcoin;
@@ -237,6 +238,8 @@ Script Script::buildPayToWitnessProgram(const Data& program) {
     script.bytes.push_back(OP_0);
     script.bytes.push_back(static_cast<byte>(program.size()));
     script.bytes.insert(script.bytes.end(), program.begin(), program.end());
+    std::cerr << "QQQ buildPayToWitnessProgram " << program.size() << " " << script.bytes.size() << "\n";
+    assert(script.bytes.size() == 22 || script.bytes.size() == 34);
     return script;
 }
 

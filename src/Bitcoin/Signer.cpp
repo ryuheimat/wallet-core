@@ -33,7 +33,9 @@ Proto::SigningOutput Signer::sign(const Proto::SigningInput &input) noexcept {
 
     Data encoded;
     auto hasWitness = std::any_of(tx.inputs.begin(), tx.inputs.end(), [](auto& input) { return !input.scriptWitness.empty(); });
+    std::cerr << "QQQ Signer::sign(1) inputs " << tx.inputs.size() << " hasWitness " << hasWitness << "\n";
     tx.encode(hasWitness, encoded);
+    std::cerr << "QQQ sign " << encoded.size() << "\n";
     output.set_encoded(encoded.data(), encoded.size());
 
     Data txHashData = encoded;

@@ -108,11 +108,11 @@ TEST(BitcoinSigning, SignP2WPKH) {
 
     auto utxo1 = input.add_utxo();
     auto utxo1Script = parse_hex("00141d0f172a0ecb48aee1be1f2687d2963ae33f71a1");
-    utxo1->set_script(utxo0Script.data(), utxo0Script.size());
+    utxo1->set_script(utxo1Script.data(), utxo1Script.size());
     utxo1->set_amount(600'000'000);
     utxo1->mutable_out_point()->set_hash(hash1.data(), hash1.size());
     utxo1->mutable_out_point()->set_index(1);
-    utxo0->mutable_out_point()->set_sequence(UINT32_MAX);
+    utxo1->mutable_out_point()->set_sequence(UINT32_MAX);
 
     // Sign
     auto result = TransactionSigner<Transaction, TransactionBuilder>(std::move(input)).sign();

@@ -8,6 +8,8 @@
 
 #include "../BinaryCoding.h"
 
+#include <iostream>
+
 using namespace TW::Bitcoin;
 
 void TransactionInput::encode(Data& data) const {
@@ -18,9 +20,14 @@ void TransactionInput::encode(Data& data) const {
 }
 
 void TransactionInput::encodeWitness(Data& data) const {
+    int size1 = data.size();
+    int wsize = 1;
     encodeVarInt(scriptWitness.size(), data);
     for (auto& item : scriptWitness) {
         encodeVarInt(item.size(), data);
         std::copy(std::begin(item), std::end(item), std::back_inserter(data));
+        wsize += 1 + item.size();
     }
+    int wsize2 = data.size() - size1;
+    std::cerr << "QQQ encodeWitness " << scriptWitness.size() << " wsize " << wsize << " wsize2 " << wsize2 << "\n";
 }

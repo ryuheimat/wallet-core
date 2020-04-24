@@ -18,6 +18,8 @@
 #include <TrezorCrypto/secp256k1.h>
 #include <TrezorCrypto/sodium/keypair.h>
 
+#include <iostream>
+
 using namespace TW;
 
 bool PrivateKey::isValid(const Data& data) {
@@ -239,6 +241,7 @@ Data PrivateKey::signAsDER(const Data& digest, TWCurve curve) const {
 
     auto result = Data{};
     std::copy(resultBytes.begin(), resultBytes.begin() + size, std::back_inserter(result));
+    std::cerr << "QQQ signAsDER " << result.size() << "\n";
     return result;
 }
 

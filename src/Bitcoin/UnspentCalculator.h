@@ -11,7 +11,7 @@
 
 namespace TW::Bitcoin {
 
-using FeeCalculator = std::function<int64_t(int64_t, int64_t, int64_t)>;
+using FeeCalculator = std::function<int64_t(int64_t, int64_t, int64_t, char, int)>;
 using SingleInputFeeCalculator = std::function<int64_t(int64_t)>;
 
 class UnspentCalculator {
@@ -29,7 +29,7 @@ class UnspentCalculator {
         : calculate(std::move(calculateFee)), calculateSingleInput(std::move(calculateSingleInputFee)) {}
 
   private:
-    static int64_t calculateFee(int64_t inputs, int64_t outputs = 2, int64_t byteFee = 1);
+    static int64_t calculateFee(int64_t inputs, int64_t outputs = 2, int64_t byteFee = 1, char = '?', int witnessProgramSize = 0);
     static int64_t calculateSingleInputFee(int64_t byteFee);
 };
 

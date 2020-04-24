@@ -12,6 +12,7 @@
 #include "SignatureVersion.h"
 
 #include <cassert>
+#include <cmath>
 
 using namespace TW::Bitcoin;
 
@@ -105,27 +106,44 @@ void Transaction::encode(bool witness, std::vector<uint8_t>& data) const {
 
     if (witness) {
         // Use extended format in case witnesses are to be serialized.
-        data.push_back(0);
-        data.push_back(1);
+        data.push_back(0); // marker
+        data.push_back(1); // flag
     }
 
+    // txins
     encodeVarInt(inputs.size(), data);
     for (auto& input : inputs) {
         input.encode(data);
     }
 
+    // rxouts
     encodeVarInt(outputs.size(), data);
     for (auto& output : outputs) {
         output.encode(data);
     }
+
+    int size1 = data.size();
+    int baseSize = data.size() - 2 + 4; // -1 (marker) -1 (flag) +4 lockTime
 
     if (witness) {
         for (auto& input : inputs) {
             input.encodeWitness(data);
         }
     }
+    int witSize = data.size() - size1;
 
-    encode32LE(lockTime, data);
+    encode32LE(lockTime, data); //nLockTime
+
+    int fullSize = data.size();
+    uint32_t vSize = fullSize;
+    uint32_t vSize2 = fullSize;
+    if (!witness) {
+        std::cerr << "QQQ encode fullSize " << fullSize << " witsize " << witSize << " vSize " << vSize << " vSize2 " << vSize2 << "\n";
+    } else {
+        vSize = std::ceil(0.25 * (double)(3 * baseSize + fullSize));
+        vSize2 = std::ceil((double)fullSize - 0.75 * (double)(2 + witSize));
+        std::cerr << "QQQ encode WIT baseSize " << baseSize << " fullSize " << fullSize << " witsize " << witSize << " vSize " << vSize << " vSize2 " << vSize2 << "\n";
+    }
 }
 
 std::vector<uint8_t> Transaction::getSignatureHash(const Script& scriptCode, size_t index,
@@ -151,6 +169,9 @@ std::vector<uint8_t> Transaction::getSignatureHashWitnessV0(const Script& script
 /// Generates the signature hash for for scripts other than witness scripts.
 std::vector<uint8_t> Transaction::getSignatureHashBase(const Script& scriptCode, size_t index,
                                                        enum TWBitcoinSigHashType hashType) const {
+    if (index >= inputs.size()) {
+        std::cerr << "QQQ ERROR getSignatureHashBase index " << index << " inputs " << inputs.size() << "\n";
+    }
     assert(index < inputs.size());
 
     auto data = std::vector<uint8_t>{};
