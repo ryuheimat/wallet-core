@@ -61,10 +61,11 @@ class TransactionSigner {
     /// \returns the signed transaction or an error.
     Result<Transaction> sign();
 
-    
     int witnessProgramSize(int output_size);
     int witnessProgramSize(const Script& script, size_t index, const Proto::UnspentTransaction& utxo) const;
     int signStepSize(const Script& script) const;
+    // internal, public for testability and Decred
+    static Data pushAll(const std::vector<Data>& results);
 
   private:
     Result<void> sign(Script script, size_t index, const Proto::UnspentTransaction& utxo);
@@ -72,7 +73,6 @@ class TransactionSigner {
                                        const Proto::UnspentTransaction& utxo, uint32_t version) const;
     Data createSignature(const Transaction& transaction, const Script& script, const Data& key,
                          size_t index, Amount amount, uint32_t version) const;
-    Data pushAll(const std::vector<Data>& results);
 
     /// Returns the private key for the given public key hash.
     Data keyForPublicKeyHash(const Data& hash) const;

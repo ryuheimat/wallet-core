@@ -9,6 +9,7 @@
 #include "TransactionInput.h"
 #include "TransactionOutput.h"
 #include "UnspentSelector.h"
+#include "SigHashType.h"
 
 #include "../BinaryCoding.h"
 #include "../Hash.h"
@@ -25,8 +26,10 @@ Result<Transaction> TransactionSigner<Transaction, TransactionBuilder>::sign() {
     std::copy(std::begin(transaction.inputs), std::end(transaction.inputs),
               std::back_inserter(signedInputs));
 
-    const bool hashSingle =
-        ((input.hash_type() & ~TWBitcoinSigHashTypeAnyoneCanPay) == TWBitcoinSigHashTypeSingle);
+    const auto hashSingle = hashTypeIsSingle(static_cast<enum TWBitcoinSigHashType>(input.hash_type()));
+    if (plan.utxos.size() == 0) {
+        return Result<Transaction>::failure("Plan without UTXOs");
+    }
     std::cerr << "QQQ TransactionSigner::sign() " << plan.utxos.size() << " " << hashSingle << " tx in out " << transaction.inputs.size() << " " << transaction.outputs.size() << "\n";
     for (auto i = 0; i < plan.utxos.size(); i += 1) {
         // Only sign TWBitcoinSigHashTypeSingle if there's a corresponding output
@@ -198,7 +201,7 @@ int TransactionSigner<Transaction, TransactionBuilder>::signStepSize(const Scrip
         return Result<std::vector<Data>>::success(std::move(results));
         */
     }
-    if (script.matchPayToPubkey(data)) {
+    if (script.matchPayToPublicKey(data)) {
         assert(false);
         /*
         auto keyHash = TW::Hash::ripemd(TW::Hash::sha256(data));
@@ -216,7 +219,7 @@ int TransactionSigner<Transaction, TransactionBuilder>::signStepSize(const Scrip
         return Result<std::vector<Data>>::success({signature});
         */
     }
-    if (script.matchPayToPubkeyHash(data)) {
+    if (script.matchPayToPublicKeyHash(data)) {
         auto key = keyForPublicKeyHash(data);
         std::cerr << "   QQQ signStepSize PayToPubkeyHash data " << hex(data) << " key " << hex(key) << "\n";
         if (key.empty()) {
@@ -362,7 +365,7 @@ Result<std::vector<Data>> TransactionSigner<Transaction, TransactionBuilder>::si
         }
         results.resize(required + 1);
         return Result<std::vector<Data>>::success(std::move(results));
-    } else if (script.matchPayToPubkey(data)) {
+    } else if (script.matchPayToPublicKey(data)) {
         auto keyHash = TW::Hash::ripemd(TW::Hash::sha256(data));
         auto key = keyForPublicKeyHash(keyHash);
         if (key.empty()) {
@@ -376,7 +379,7 @@ Result<std::vector<Data>> TransactionSigner<Transaction, TransactionBuilder>::si
             return Result<std::vector<Data>>::failure("Failed to sign.");
         }
         return Result<std::vector<Data>>::success({signature});
-    } else if (script.matchPayToPubkeyHash(data)) {
+    } else if (script.matchPayToPublicKeyHash(data)) {
         auto key = keyForPublicKeyHash(data);
         if (key.empty()) {
             // Error: Missing keys
