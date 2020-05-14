@@ -1391,7 +1391,7 @@
         "curve": "secp256k1",
         "publicKeyType": "secp256k1Extended",
         "explorer": {
-            "url": "https://ropsten.etherscan.io/",
+            "url": "https://ropsten.etherscan.io",
             "txPath": "/tx/",
             "accountPath": "/address/"
         },
